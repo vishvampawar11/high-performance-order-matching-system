@@ -1,15 +1,13 @@
-#pragma once
-#include <cstdint>
-
-#pragma pack(push, 1)
-struct MarketMessage
+struct alignas(64) MarketMessage
 {
-    char msg_type;
-    uint32_t seq_num;
+    uint8_t msg_type;
+    uint8_t side;
+    uint16_t _p0 = 0;
+    uint32_t seq_num = 0;
     uint64_t order_id;
-    char symbol[4];
-    char side;
+    char symbol[8];
     uint64_t price;
-    uint32_t qty;
+    uint64_t qty;
+    uint8_t _p1[24] = {};
 };
-#pragma pack(pop)
+static_assert(sizeof(MarketMessage) == 64);

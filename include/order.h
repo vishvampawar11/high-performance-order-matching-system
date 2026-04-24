@@ -4,21 +4,26 @@
 
 struct Order
 {
-    uint64_t order_id = 0;
+    OrderId order_id = 0;
     Side side = Side::BUY;
-    uint64_t price = 0;
-    uint32_t qty = 0;
-    uint32_t filled_qty = 0;
+    Price price = 0;
+    Qty qty = 0;
+    Qty filled_qty = 0;
+    OrderStatus status = OrderStatus::ACTIVE;
 
-    Order *next = nullptr;
-    Order *prev = nullptr;
-
-    uint32_t remaining_qty() const noexcept { return qty - filled_qty; }
+    Qty remaining_qty() const noexcept { return qty - filled_qty; }
 
     double real_price() const noexcept { return static_cast<double>(price) / PRICE_SCALE; }
 
-    Order(uint64_t id, Side s, uint64_t p, uint32_t q)
-        : order_id(id), side(s), price(p), qty(q),
-          filled_qty(0),
-          next(nullptr), prev(nullptr) {}
+    void update_status()
+    {
+        if (remaining_qty() == 0)
+            status = OrderStatus::FILLED;
+        else if (filled_qty > 0)
+            status = OrderStatus::PARTIAL_FILL;
+        else
+            status = OrderStatus::ACTIVE;
+    }
+
+    Order(OrderId id, Side s, Price p, Qty q) : order_id(id), side(s), price(p), qty(q), filled_qty(0) {}
 };

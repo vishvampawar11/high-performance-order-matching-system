@@ -1,34 +1,20 @@
 #include "price_level.h"
 
-void PriceLevel::append(Order *order)
+std::list<Order *>::iterator PriceLevel::add_order(Order *order)
 {
-    order->prev = tail_;
-    order->next = nullptr;
-
-    if (tail_)
-        tail_->next = order;
-    tail_ = order;
-    if (!head_)
-        head_ = order;
-
+    orders_.push_back(order);
     total_qty_ += order->remaining_qty();
-    ++order_count_;
+    return --orders_.end();
 }
 
-void PriceLevel::remove(Order *order)
+void PriceLevel::remove_order(std::list<Order *>::iterator it)
 {
-    if (order->prev)
-        order->prev->next = order->next;
-    if (order->next)
-        order->next->prev = order->prev;
-    if (head_ == order)
-        head_ = order->next;
-    if (tail_ == order)
-        tail_ = order->prev;
-
-    order->next = nullptr;
-    order->prev = nullptr;
-
+    Order *order = *it;
     total_qty_ -= order->remaining_qty();
-    --order_count_;
+    orders_.erase(it);
+}
+
+void PriceLevel::adjust_total_qty(Qty delta)
+{
+    total_qty_ += delta;
 }

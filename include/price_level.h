@@ -1,25 +1,25 @@
 #pragma once
 #include <cstdint>
+#include <list>
 
 #include "order.h"
 
 class PriceLevel
 {
 private:
-    uint64_t price_;
-    uint32_t total_qty_;
-    size_t order_count_;
-    Order *head_;
-    Order *tail_;
+    Price price_;
+    Qty total_qty_;
+    std::list<Order *> orders_;
 
 public:
-    explicit PriceLevel(int64_t price) : price_(price), total_qty_(0), order_count_(0), head_(nullptr), tail_(nullptr) {}
+    explicit PriceLevel(Price price) : price_(price), total_qty_(0) {}
 
-    void append(Order *order);
-    void remove(Order *order);
+    size_t order_count() const noexcept { return orders_.size(); }
+    Price price() const noexcept { return price_; }
+    Qty total_qty() const noexcept { return total_qty_; }
+    const std::list<Order *> &orders() const { return orders_; }
 
-    bool empty() const noexcept { return head_ == nullptr; }
-    size_t order_count() const noexcept { return order_count_; }
-    int64_t price() const noexcept { return price_; }
-    uint64_t total_qty() const noexcept { return total_qty_; }
+    std::list<Order *>::iterator add_order(Order *order);
+    void remove_order(std::list<Order *>::iterator it);
+    void adjust_total_qty(Qty delta);
 };

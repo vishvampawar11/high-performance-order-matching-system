@@ -73,6 +73,31 @@ public:
         }
     }
 
+    void log_incoming_message(const MarketMessage &msg)
+    {
+        std::string sym(msg.symbol, 8);
+        sym.erase(sym.find_first_of('\0'));
+
+        log(LogLevel::INFO, "Received msg [seq=" + std::to_string(msg.seq_num) +
+                                "|type=" + std::string(1, msg.msg_type) +
+                                "|side=" + std::string(1, msg.side) +
+                                "|symbol=" + sym +
+                                "|order_id=" + std::to_string(msg.order_id) +
+                                "|price=" + std::to_string(msg.price) +
+                                "|qty=" + std::to_string(msg.qty) + "]");
+    }
+
+    static void log_trade(const Trade &trade)
+    {
+        std::string message = "TRADE id" + std::to_string(trade.trade_id) +
+                              " aggressor id=" + std::to_string(trade.aggressor_id) +
+                              " passive id=" + std::to_string(trade.passive_id) +
+                              " price=" + std::to_string(trade.exec_price) +
+                              " qty=" + std::to_string(trade.exec_qty);
+
+        Logger::instance().log(LogLevel::TRADE, message);
+    }
+
     ~Logger()
     {
         if (log_file.is_open())
