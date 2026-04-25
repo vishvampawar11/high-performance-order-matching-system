@@ -13,8 +13,24 @@ file(GLOB SOURCES
 
 add_executable(order_matching_system ${SOURCES})
 
+find_package(PostgreSQL REQUIRED)
+
+find_path(PQXX_INCLUDE_DIR pqxx/pqxx)
+find_library(PQXX_LIBRARY pqxx)
+
+target_include_directories(order_matching_system PRIVATE
+    ${PQXX_INCLUDE_DIR}
+    ${PostgreSQL_INCLUDE_DIRS}
+)
+
+# Link libraries (KEYWORD SIGNATURE — consistent)
+target_link_libraries(order_matching_system PRIVATE
+    ${PQXX_LIBRARY}
+    ${PostgreSQL_LIBRARIES}
+)
+
 if (WIN32)
-    target_link_libraries(order_matching_system ws2_32)
+    target_link_libraries(order_matching_system PRIVATE ws2_32)
 endif()
 
 set_target_properties(order_matching_system PROPERTIES

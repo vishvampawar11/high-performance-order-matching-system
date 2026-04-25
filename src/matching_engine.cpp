@@ -1,5 +1,6 @@
 #include <vector>
 #include "matching_engine.h"
+#include "order_archive.h"
 
 std::vector<Trade> MatchingEngine::match_buy(LimitOrderBook &book, Order *agg)
 {
@@ -23,11 +24,15 @@ std::vector<Trade> MatchingEngine::match_buy(LimitOrderBook &book, Order *agg)
 
             agg->update_status();
             passive->update_status();
-            trades.push_back(make_trade(agg, passive, fill_qty));
+            Trade trade = make_trade(agg, passive, fill_qty);
+            trades.push_back(trade);
+
+            trade_publisher.push(trade);
 
             if (passive->remaining_qty() == 0)
             {
                 Order *deleted = book.delete_order(passive->order_id); // remove filled resting order
+                OrderArchive::instance().add_to_filled_archive(deleted, passive->price, fill_qty);
                 delete deleted;
                 restart = true;
                 break;
@@ -80,11 +85,16 @@ std::vector<Trade> MatchingEngine::match_sell(LimitOrderBook &book, Order *agg)
 
             agg->update_status();
             passive->update_status();
-            trades.push_back(make_trade(agg, passive, fill_qty));
+            Trade trade = make_trade(agg, passive, fill_qty);
+            trades.push_back(trade);
+
+            trade_publisher.push(trade);
 
             if (passive->remaining_qty() == 0)
             {
                 Order *deleted = book.delete_order(passive->order_id);
+                OrderArchive::instance().add_to_filled_archive(deleted, passive->price, fill_qty);
+
                 delete deleted;
                 restart = true;
                 break;

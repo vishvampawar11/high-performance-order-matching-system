@@ -50,7 +50,7 @@ public:
             label = "[WARN] ";
             break;
         case LogLevel::ERR:
-            label = "[ERR ] ";
+            label = "[ERR] ";
             break;
         case LogLevel::TRADE:
             label = "[TRADE]";

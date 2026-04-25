@@ -13,6 +13,8 @@
 #include "spsc_queue.h"
 #include "logger.h"
 #include "types.h"
+#include "trade_publisher.h"
+#include "postgres_writer.h"
 
 static constexpr size_t kQueueSize = 1024;
 static SPSCQueue<MarketMessage, kQueueSize> message_queue;
@@ -136,8 +138,13 @@ int main()
     u_long mode = 1;
     ioctlsocket(sockfd, FIONBIO, &mode);
 
+    TradePublisher trade_publisher;
+    const char *conninfo = std::getenv("PG_CONN");
+    PostgresWriter postgres_writer(trade_publisher, conninfo);
+    postgres_writer.start();
+
     LimitOrderBook book;
-    MatchingEngine engine;
+    MatchingEngine engine(trade_publisher);
     std::thread consumer(consumer_thread, std::ref(book), std::ref(engine));
 
     char buffer[1024];
@@ -180,5 +187,9 @@ int main()
 
     closesocket(sockfd);
     WSACleanup();
+
+    // Stop PostgresWriter thread
+    postgres_writer.stop();
+
     return 0;
 }
